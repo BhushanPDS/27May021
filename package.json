@@ -14,16 +14,25 @@
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
+    "aws": "*",
+    "aws-sdk": "^2.907.0",
     "bcrypt": "^5.0.1",
     "dotenv": "^9.0.2",
     "express-handlebars": "^5.3.2",
     "i": "^0.3.6",
+    "install": "^0.13.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.12.8",
     "nodemailer": "^6.6.0",
     "nodemailer-smtp-transport": "^2.7.4",
     "sequelize": "^6.6.2",
     "totp": "^0.0.1",
-    "twilio": "^3.62.0"
+    "twilio": "^3.62.0",
+    "ejs": "latest",
+    "express": "latest",
+    "body-parser": "latest",
+    "mongodb": "latest"
   }
+
+    
 }

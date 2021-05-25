@@ -8,27 +8,130 @@ const path = require('path')
 const exphbs = require('express-handlebars')
 const bodyparser = require('body-parser');
 const app = require('express');
+const cors = require('cors');
+const Gateway = require("../model/Gateway");
+const Device = require("../model/Device");
+const DeviceProfile = require("../model/DeviceProfile");
 
-// const accountSid = "ACf5817ddc104d5034171def0074992c6a";
-// const authToken = "4665920efb6a2a1dfbd92c3eebcb84a2";
+const ServiceProfile = require("../model/ServiceProfile");
 
-// const twilioClient = require("twilio")(accountSid, authToken);
 
-const user = require("../model/User");
+var AWS = require('aws-sdk');
+AWS.config.update({region:'us-east-1'});
+
+
+var config = ({
+  "apiVersion": "2020-11-22",
+  "accessKeyId": "AKIA4PNGHYBCIQ5OPPHU",
+  "secretAccessKey": "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",
+  "region": "us-east-1"
+  // "endpoint":"https://IotWireless.us-east-1.amazonaws.com"
+});
+var iotwireless = new AWS.IoTWireless(config);
+// var params = {
+//   LoRaWAN: { /* required */
+//     GatewayEui: '1234567895236547',
+//     RfRegion: 'AU915'
+//     // JoinEuiFilters: [
+//     //   [
+//     //     '6sd7g0k8',
+//     //     /* more items */
+//     //   ],
+//     //   /* more items */
+//     // ],
+//     // NetIdFilters: [
+//     //   '778gytd',
+//     //   /* more items */
+//     // ],
+//     // RfRegion: 'AU915',
+//     // SubBands: [
+//     //   '25631',
+//     //   /* more items */
+//     // ]
+//   },
+//   ClientRequestToken: 'STRING_VALUE',
+//   Description: 'hello bhushan',
+//   Name: 'sghy',
+//   Tags: [
+//     {
+//       Key: '1', /* required */
+//       Value: '563241' /* required */
+//     },
+//     /* more items */
+//   ]
+// };
+// iotwireless.createWirelessGateway(params, function(err, data) {
+//   if (err) console.log(err, err.stack); // an error occurred
+//   else     console.log(data);           // successful response
+// });
+  AWS_SDK_LOAD_CONFIG=1
+// var cognitoServiceProvider = new AWS.CognitoIdentityServiceProvider();
+// const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
+
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey("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")
 const secretLoginCode = Date.now().toString().slice(-6);
 
+// var iotwireless = new AWS.IoTWireless();
+// Aws  Creddentials
+
+//
+
+// var params = {
+//   LoRaWAN: { /* required */
+//     GatewayEui: '2374837423782',
+//     JoinEuiFilters: [
+//       [
+//         '3323243432',
+//         /* more items */
+//       ],
+//       /* more items */
+//     ],
+//     NetIdFilters: [
+//       '9876542334',
+//       /* more items */
+//     ],
+//     RfRegion: 'AU915',
+//     SubBands: [
+//       '5263148790',
+//       /* more items */
+//     ]
+//   },
+//   ClientRequestToken: '37472743874',
+//   Description: 'hello Bhushan',
+//   Name: 'How are you',
+//   Tags: [
+//     {
+//       Key: '2', /* required */
+//       Value: '3434' /* required */
+//     },
+//     /* more items */
+//   ]
+// };
 
 
-//otp for 
+// iotwireless.createWirelessGateway(params, function(err, data) {
+//   if (err) console.log(err, err.stack); // an error occurred
+//   else     console.log(data);           // successful response
+// });
 
+
+
+AWS.config.getCredentials(function(err) {
+  if (err) console.log(err.stack);
+  // credentials not loaded
+  else {
+    console.log("Access key:", AWS.config.credentials.aws_access_key_id);
+  }
+});
+
+//Otp  Creation
 
 var digits = '0123456789';
 
     var otpLength = 6;
     var otp = '';
-    step =60;
+    limit=60;
 
     for(let i=1; i<=otpLength; i++)
 
@@ -46,27 +149,12 @@ var digits = '0123456789';
 
 
 
-  
-
-let transporter = nodemailer.createTransport({
-  // host: "varadeb278@gmail.com",
-  port: 465,
-  secure: true,
-  service: 'Gmail',
-
-  auth: {
-      user: 'noreply@gmail.com',
-      pass: 'PranitaDS@35',
-  }
-
-});
-
 // validation
 const { registerValidation , loginValidation} = require("../validation");
 
 
 router.post("/register", async (req, res) => {
-   // validate the user
+  
 
    password=req.body.password;
    confirmpassword=req.body.confirmpassword;
@@ -134,54 +222,7 @@ router.post("/login", async (req, res) => {
     },
   });
 });
-
 router.post("/senMailForForgotPassword",  async (req, res) =>
-{
-  email=req.body.email;
-  const user = await User.findOne({ email: req.body.email });
-  // throw error when email is wrong
-  if (!user) return res.status(400).json({ error: "Email is wrong" });
-   else
- {
-  const secretLoginCode = Date.now().toString().slice(-6);
-  const msg = {
-    to: req.body.email, // Change to your recipient
-    from: 'noreply.com', // Change to your verified sender
-    subject: 'Sending with SendGrid is Fun',
-    text: 'and easy to do anywhere, even with Node.js',
-    html: `To reset your password please verify the given OTP ${otp}`,
-    }
-  let data = { temproryMail_otp: secretLoginCode };
-  sgMail.send(msg)
-    .then((response) => 
-    {
-      if (response != null) 
-      {
-        userHelper.updateByEmail(req.body.email, data);
-      }
-      console.log(response[0].statusCode)
-      console.log(response[0].headers)
-    })
-    .catch((error) => 
-    {
-      console.error(error)
-    })
-  }
-  });
-
-
-  
-  router.post('/verify', function (req, res) {
-  
-      if (req.body.otp == otp) {
-          res.send("otp verified");
-      }
-      else {
-          res.render('otp', { msg: 'otp is incorrect' });
-      }
-  });
-            
-  router.post("/resend",  async (req, res) =>
 {
   email=req.body.email;
   const user = await User.findOne({ email: req.body.email });
@@ -201,10 +242,7 @@ router.post("/senMailForForgotPassword",  async (req, res) =>
   sgMail.send(msg)
     .then((response) => 
     {
-      if (response != null) 
-      {
-        userHelper.updateByEmail(req.body.email, data);
-      }
+      
       console.log(response[0].statusCode)
       console.log(response[0].headers)
     })
@@ -214,6 +252,224 @@ router.post("/senMailForForgotPassword",  async (req, res) =>
     })
   }
   });
-           
+
+  router.post('/verify', async (req, res) =>
+  {
+    try{
+    if (req.body.otp == otp) {
+        res.send("Otp  verified");
+    }
+    else {
+      res.send("incorrect otp");
+
+  }
+  }catch(error)
+  {
+    console.log(error);
+  }
+});
+
+
+
+router.post("/resend",  async (req, res) =>
+{
+  email=req.body.email;
+  const user = await User.findOne({ email: req.body.email });
+  // throw error when email is wrong
+  if (!user) return res.status(400).json({ error: "Email is wrong" });
+   else
+ {
+  const secretLoginCode = Date.now().toString().slice(-6);
+  const msg = {
+    to: req.body.email, // Change to your recipient
+    from: 'bhushan.varade@thinkitive.com', // Change to your verified sender
+    subject: 'Reset Password',
+    text: 'and easy to do anywhere, even with Node.js',
+    html: `Your Resend otp ${otp}`,
+    }
+  let data = { temproryMail_otp: secretLoginCode };
+  sgMail.send(msg)
+    .then((response) => 
+    {
+      
+      console.log(response[0].statusCode)
+      console.log(response[0].headers)
+    })
+    .catch((error) => 
+    {
+      console.error(error)
+    })
+  }
+  });
+
+  // router.post("/wireless-gateways", async (req, res) => {
   
+    
+  
+  //   ClientRequestToken=req.body.ClientRequestToken;
+  //   gatewayEUI=req.body.gatewayEUI;
+  //   cgatewayEUI=req.body.cgatewayEUI;
+  //   RFregion=req.body.RFregion;
+  //   name=req.body.name;
+  //   description=req.body.description;
+  //   tag=req.body.tag;
+  //   Arn=req.body.Arn;
+  //   Id=req.body.Id;
+
+  //    if(gatewayEUI!=cgatewayEUI)
+  //   {
+  //       res.status(201).json({
+  //           msg:"gatewayEUI & cgatewayEUI did not match"
+  //       })
+  //   }
+   
+  //  {
+    
+
+  //    const gateway = new Gateway({
+  //     ClientRequestToken:req.body.ClientRequestToken,
+  //     gatewayEUI: req.body.gatewayEUI,
+  //     cgatewayEUI: req.body.cgatewayEUI,
+  //     RFregion:req.body.RFregion,
+  //     name:req.body.name,
+  //     description:req.body.description,
+  //     tag:req.body.tag,
+  //     Arn:req.body.Arn,
+  //     Id:req.body.Id
+     
+   
+     
+  //   });
+  //   try {
+  //     const savedGateway = await gateway.save();
+  //     res.json({ error: null, data: savedGateway });
+  //   } catch (error) {
+  //     res.status(400).json({ error });
+  //   }
+  //   }
+  // });
+
+
+
+  // Json Data
+  router.post("/wireless-gateway", async (req, res) => {
+  
+    
+  
+    
+    Arn=req.body.Arn;
+    Id=req.body.Id;
+
+     const gateway = new Gateway({
+    
+      Arn:req.body.Arn,
+      Id:req.body.Id
+     
+   
+     
+    });
+    try {
+      const savedGateway = await gateway.save();
+      res.json({ error: null, data: savedGateway });
+    } catch (error) {
+      res.status(400).json({ error });
+    }
+    }
+  );
+  
+  
+  router.post("/add_device", async (req, res) => {
+  
+
+
+    lorawanverion=req.body.lorawanverion;
+    deviceprofile=req.body.deviceprofile;
+    serviceprofile=req.body.serviceprofile;
+    tag=req.body.tag;
+   
+   {
+    
+     const device = new  Device({
+      lorawanverion:req.body.lorawanverion,
+      deviceprofile:req.body.deviceprofile,
+      serviceprofile:req.body.serviceprofile,
+      tag:req.body.tag
+     
+   
+     
+    });
+    try {
+      const savedDevice = await device.save();
+      res.json({ error: null, data: savedDevice });
+    } catch (error) {
+      res.status(400).json({ error });
+    }
+    }
+  });
+
+
+  router.post("/add_deviceprofile", async (req, res) => {
+  
+
+
+    deviceprofilename=req.body.deviceprofilename;
+    RFRegion=req.body.RFRegion;
+    MAC_Version=req.body.MAC_Version;
+    RegionalParameter=req.body.RegionalParameter;
+    MaxEIRP=req.body.MaxEIRP;
+    MaxDutyCycle=req.body.MaxDutyCycle;
+    tag=req.body.tag;
+    ClassBTimeout=req.body.ClassBTimeout;
+    PingSlotFreq=req.body.PingSlotFreq;
+    PingSlotPeriod=req.body.PingSlotPeriod;
+    PingSlotDR=req.body.PingSlotDR;
+    ClassCTimeout=req.body.ClassCTimeout;
+   
+   {
+    
+     const deviceprofile = new  DeviceProfile({
+      deviceprofilename:req.body.deviceprofilename,
+      RFRegion:req.body.RFRegion,
+      MAC_Version:req.body.MAC_Version,
+      RegionalParameter:req.body.RegionalParameter,
+      MaxEIRP:req.body.MaxEIRP,
+      MaxDutyCycle:req.body.MaxDutyCycle,
+      tag:req.body.tag,
+      ClassBTimeout:req.body.ClassBTimeout,
+      PingSlotFreq:req.body.PingSlotFreq,
+      PingSlotPeriod:req.body.PingSlotPeriod,
+      PingSlotDR:req.body.PingSlotDR,
+      ClassCTimeout:req.body.ClassCTimeout
+   
+     
+    });
+    try {
+      const savedDeviceProfile = await deviceprofile.save();
+      res.json({ error: null, data: savedDeviceProfile });
+    } catch (error) {
+      res.status(400).json({ error });
+    }
+    }
+  });
+  router.post("/add_serviceprofile", async (req, res) => {
+  
+    serviceprofilename=req.body.serviceprofilename;
+    tag=req.body.tag;
+   
+   {
+    
+     const serviceprofile = new  ServiceProfile({
+      serviceprofilename:req.body.serviceprofilename,
+      tag:req.body.tag
+   
+     
+    });
+    try {
+      const savedServiceProfile = await serviceprofile.save();
+      res.json({ error: null, data: savedServiceProfile });
+    } catch (error) {
+      res.status(400).json({ error });
+    }
+    }
+  });
 module.exports = router;

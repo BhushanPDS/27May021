@@ -6,7 +6,11 @@ const nodemailer = require('nodemailer');
 
 
 const  response  = require("express");
+// Aws  Creddentials
 
+Account_Id = 857731481668;
+username = "Ravi";
+password = "RA0i23qxPL";
 
 // middlewares
 app.use(express.json()); // for body parser
