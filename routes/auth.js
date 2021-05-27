@@ -25,105 +25,14 @@ var config = ({
   "accessKeyId": "AKIA4PNGHYBCIQ5OPPHU",
   "secretAccessKey": "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",
   "region": "us-east-1"
-  // "endpoint":"https://IotWireless.us-east-1.amazonaws.com"
+  
 });
-var iotwireless = new AWS.IoTWireless(config);
-// var params = {
-//   LoRaWAN: { /* required */
-//     GatewayEui: '1234567895236547',
-//     RfRegion: 'AU915'
-//     // JoinEuiFilters: [
-//     //   [
-//     //     '6sd7g0k8',
-//     //     /* more items */
-//     //   ],
-//     //   /* more items */
-//     // ],
-//     // NetIdFilters: [
-//     //   '778gytd',
-//     //   /* more items */
-//     // ],
-//     // RfRegion: 'AU915',
-//     // SubBands: [
-//     //   '25631',
-//     //   /* more items */
-//     // ]
-//   },
-//   ClientRequestToken: 'STRING_VALUE',
-//   Description: 'hello bhushan',
-//   Name: 'sghy',
-//   Tags: [
-//     {
-//       Key: '1', /* required */
-//       Value: '563241' /* required */
-//     },
-//     /* more items */
-//   ]
-// };
-// iotwireless.createWirelessGateway(params, function(err, data) {
-//   if (err) console.log(err, err.stack); // an error occurred
-//   else     console.log(data);           // successful response
-// });
-  AWS_SDK_LOAD_CONFIG=1
-// var cognitoServiceProvider = new AWS.CognitoIdentityServiceProvider();
-// const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
+ 
 
-const sgMail = require('@sendgrid/mail')
-sgMail.setApiKey("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")
-const secretLoginCode = Date.now().toString().slice(-6);
+// const sgMail = require('@sendgrid/mail')
+// sgMail.setApiKey("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")
+// const secretLoginCode = Date.now().toString().slice(-6);
 
-// var iotwireless = new AWS.IoTWireless();
-// Aws  Creddentials
-
-//
-
-// var params = {
-//   LoRaWAN: { /* required */
-//     GatewayEui: '2374837423782',
-//     JoinEuiFilters: [
-//       [
-//         '3323243432',
-//         /* more items */
-//       ],
-//       /* more items */
-//     ],
-//     NetIdFilters: [
-//       '9876542334',
-//       /* more items */
-//     ],
-//     RfRegion: 'AU915',
-//     SubBands: [
-//       '5263148790',
-//       /* more items */
-//     ]
-//   },
-//   ClientRequestToken: '37472743874',
-//   Description: 'hello Bhushan',
-//   Name: 'How are you',
-//   Tags: [
-//     {
-//       Key: '2', /* required */
-//       Value: '3434' /* required */
-//     },
-//     /* more items */
-//   ]
-// };
-
-
-// iotwireless.createWirelessGateway(params, function(err, data) {
-//   if (err) console.log(err, err.stack); // an error occurred
-//   else     console.log(data);           // successful response
-// });
-
-
-
-AWS.config.getCredentials(function(err) {
-  if (err) console.log(err.stack);
-  // credentials not loaded
-  else {
-    console.log("Access key:", AWS.config.credentials.aws_access_key_id);
-  }
-});
 
 //Otp  Creation
 
@@ -233,7 +142,7 @@ router.post("/senMailForForgotPassword",  async (req, res) =>
   const secretLoginCode = Date.now().toString().slice(-6);
   const msg = {
     to: req.body.email, // Change to your recipient
-    from: 'bhushan.varade@thinkitive.com', // Change to your verified sender
+    from: 'varadeb278@gmail.com', // Change to your verified sender
     subject: 'Sending with SendGrid is Fun',
     text: 'and easy to do anywhere, even with Node.js',
     html: `To reset your password please verify the given OTP ${otp}`,
@@ -283,7 +192,7 @@ router.post("/resend",  async (req, res) =>
   const msg = {
     to: req.body.email, // Change to your recipient
     from: 'bhushan.varade@thinkitive.com', // Change to your verified sender
-    subject: 'Reset Password',
+    subject: 'your resend otp ',
     text: 'and easy to do anywhere, even with Node.js',
     html: `Your Resend otp ${otp}`,
     }
